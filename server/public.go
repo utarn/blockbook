@@ -455,6 +455,7 @@ func (s *PublicServer) parseTemplates() []*template.Template {
 		"isOwnAddress":             isOwnAddress,
 		"isOwnAddresses":           isOwnAddresses,
 		"toJSON":                   toJSON,
+		"tokenTransfersCount":      tokenTransfersCount,
 	}
 	var createTemplate func(filenames ...string) *template.Template
 	if s.debug {
@@ -550,6 +551,17 @@ func formatAmountWithDecimals(a *api.Amount, d int) string {
 func setTxToTemplateData(td *TemplateData, tx *api.Tx) *TemplateData {
 	td.Tx = tx
 	return td
+}
+
+// called from template, returns count of token transfers of given type
+func tokenTransfersCount(tx *api.Tx, t api.TokenType) int {
+	count := 0
+	for i := range tx.TokenTransfers {
+		if tx.TokenTransfers[i].Type == t {
+			count++
+		}
+	}
+	return count
 }
 
 // returns true if address is "own",
