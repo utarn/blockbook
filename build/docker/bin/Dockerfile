@@ -1,6 +1,5 @@
 # initialize from the image defined by BASE_IMAGE
-ARG BASE_IMAGE
-FROM $BASE_IMAGE
+FROM ubuntu:24.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PORTABLE_ROCKSDB
 
@@ -39,7 +38,8 @@ RUN echo -n "GOPATH: " && echo $GOPATH
 
 # install rocksdb
 RUN cd /opt && git clone -b $ROCKSDB_VERSION --depth 1 https://github.com/facebook/rocksdb.git
-RUN cd /opt/rocksdb && CFLAGS=-fPIC CXXFLAGS=-fPIC PORTABLE=$PORTABLE_ROCKSDB make -j 4 release
+RUN cd /opt/rocksdb && sed -i '8i #include <cstdint>' table/block_based/data_block_hash_index.h && sed -i '9i #include <cstdint>' util/string_util.h && sed -i '11i #include <cstdint>' include/rocksdb/utilities/checkpoint.h
+RUN cd /opt/rocksdb && CFLAGS=-fPIC CXXFLAGS="-fPIC -Wno-error=redundant-move" PORTABLE=$PORTABLE_ROCKSDB make -j 4 release
 RUN strip /opt/rocksdb/ldb /opt/rocksdb/sst_dump && \
     cp /opt/rocksdb/ldb /opt/rocksdb/sst_dump /build
 
